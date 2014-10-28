@@ -10,8 +10,8 @@ $.fn.tmpl = function(tmplId, data, callback) {
 	var t = this
 	if(!$('#tmpl_' + tmplId).length){
 	  	$.ajax({
-  			url: tmplId + '.tmpl',
-			cache: false,
+  			url: 'templates/' + tmplId + '.tmpl',
+			cache: true,
 	  	}).done(function(response){
 			$('<script type="text/x-dot-template" id="tmpl_' + tmplId + '"></script>').html(response).appendTo($('body'))
 			

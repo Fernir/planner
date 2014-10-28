@@ -16,7 +16,7 @@ require_once("config.php");
 <script type="text/javascript" src="js/jquery_ui.js"></script>
 <script type="text/javascript" src="js/dot.js"></script>
 <script type="text/javascript" src="js/functions.js"></script>
-<script type="text/javascript" src="js/script.min.js"></script>
+<script type="text/javascript" src="js/script.js"></script>
 
 <title>Бронирование переговорной</title>
 </head>

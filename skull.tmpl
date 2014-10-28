@@ -1,8 +1,0 @@
-  {{? it.conflict }}
-  <div>
-  конфликт: {{=it.conflict.user}}, {{=it.conflict.start}}-{{=it.conflict.end}}
-	{{? it.ia }}
-	<br><br><a class='button_sand red' onclick="dodialog('<p>Вы действительно хотите удалить запись?</p>','csend({view : \'week\', storage:1, id:{{=it.conflict.id}}, tstart:\'{{=it.conflict.start}}\', tend:\'{{=it.conflict.end}}\'})')">удалить конфликтующую запись</a>
-    {{?}}  
-  </div>
-  {{?}}
