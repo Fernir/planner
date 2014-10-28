@@ -6,18 +6,43 @@ var gdata = null
 
 var j$ = function(d){return eval('('+d+')')}
 
-$.fn.tmpl = function(tmplId, data) {
-    var tmpl = doT.template($('#tmpl_' + tmplId).html())
-    if (!$.isArray(data)) data = [data]
-
-    return this.each(function() {
-        var html = ''
-        for (var itemIdx = 0; itemIdx < data.length; itemIdx++) {
-            html += tmpl(data[itemIdx])
-        }
-        $(this).html(html)
-    })
+$.fn.tmpl = function(tmplId, data, callback) {
+	var t = this
+	if(!$('#tmpl_' + tmplId).length){
+	  	$.ajax({
+  			url: tmplId + '.tmpl',
+			cache: false,
+	  	}).done(function(response){
+			$('<script type="text/x-dot-template" id="tmpl_' + tmplId + '"></script>').html(response).appendTo($('body'))
+			
+		    var tmpl = doT.template($('#tmpl_' + tmplId).html())
+		    if (!$.isArray(data)) data = [data]
+			
+		    return t.each(function() {
+		        var html = ''
+		        for (var itemIdx = 0; itemIdx < data.length; itemIdx++) {
+		            html += tmpl(data[itemIdx])
+		        }
+		        $(t).html(html)
+				if(callback) callback()
+		    })
+					
+	  	})
+	} else {
+	    var tmpl = doT.template($('#tmpl_' + tmplId).html())
+	    if (!$.isArray(data)) data = [data]
+		
+	    return this.each(function() {
+	        var html = ''
+	        for (var itemIdx = 0; itemIdx < data.length; itemIdx++) {
+	            html += tmpl(data[itemIdx])
+	        }
+	        $(this).html(html)
+			if(callback) callback()
+	    })
+	}
 }
+
 
 String.prototype.format = function() {
     var formatted = this
@@ -43,7 +68,7 @@ var dblclick = function(obj, id, name){
 var changerows = function(callback){
 	var tstart = $('#amount_tstart').text()
 	var tend = $('#amount_tend').text()
-
+	
 	if($('#checkmonths').is(':checked')){
 		csend({ view : 'week', action : 'checkfield', id : $('#idvalue').val(), user : $('#uservalue').val(), addmonths : $('#months').val(), tstart : tstart, tend : tend }, callback)
 	} else {
@@ -84,6 +109,7 @@ var inptr = function(e, object){
 	data.user = data.user || gdata.user
 	data.week = data.week || ($(object).index() - 1)
 	data.id = data.id || object.attr('abbr')
+	data.ts = data.ts || ''
 	
 	var tstp = data.tstart.replace(':30','.5').replace(':00','').replace(':0','')
 	var tetp = data.tend.replace(':30','.5').replace(':00','').replace(':0','')
@@ -95,41 +121,50 @@ var inptr = function(e, object){
 		step: .5,
 		values : [tstp, tetp || parseInt(tstp) + 1],
 		slide: function( event, ui ) {
-			var ts = (ui.values[0].toString().indexOf('.5') > 0) ? ui.values[0].toString().replace('.5', ':30') : ui.values[0] + ':00'
-			var te = (ui.values[1].toString().indexOf('.5') > 0) ? ui.values[1].toString().replace('.5', ':30') : ui.values[1] + ':00'
-          	$('.ui-slider-handle:first').html('<div id="amount_tstart" class="ui-widget tooltip">' + ts + '</div>')
-        	$('.ui-slider-handle:last').html('<div id="amount_tend" class="ui-widget tooltip">' + te + '</div>')
+			var ts = (ui.values[0]%1 > 0) ? ui.values[0].toString().replace('.5', ':30') : ui.values[0] + ':00'
+			var te = (ui.values[1]%1 > 0) ? ui.values[1].toString().replace('.5', ':30') : ui.values[1] + ':00'
+			if(!$('#amount_tstart').length){
+            	$('.ui-slider-handle:first').html('<div id="amount_tstart" class="ui-widget tooltip">' + ts + '</div>')
+          		$('.ui-slider-handle:last').html('<div id="amount_tend" class="ui-widget tooltip">' + te + '</div>')
+  			}else{
+          		$('#amount_tstart').text(ts)
+          		$('#amount_tend').text(te)
+			}
 			changerows()
 		},
 	})
 
 	var tstxt = $('#slider-range').slider('values', 0)
 	var tetxt = $('#slider-range').slider('values', 1)
-	tstxt = (tstxt.toString().indexOf('.5') > 0) ? tstxt.toString().replace('.5', ':30') : tstxt + ':00'
-	tetxt = (tetxt.toString().indexOf('.5') > 0) ? tetxt.toString().replace('.5', ':30') : tetxt + ':00'
-    $('.ui-slider-handle:first').html('<div id="amount_tstart" class="ui-widget tooltip">' + tstxt + '</div>').hover(function(){
-		$(this).parent().find('.ui-slider-handle:last').css('z-index', '999')
-		$(this).css('z-index', '1000')
-  	})
-    $('.ui-slider-handle:last').html('<div id="amount_tend" class="ui-widget tooltip">' + tetxt + '</div>').hover(function(){
-		$(this).parent().find('.ui-slider-handle:first').css('z-index', '999')
-		$(this).css('z-index', '1000')
-  	})
-
-
+	tstxt = (tstxt%1 > 0) ? tstxt.toString().replace('.5', ':30') : tstxt + ':00'
+	tetxt = (tetxt%1 > 0) ? tetxt.toString().replace('.5', ':30') : tetxt + ':00'
+	
+	if(!$('#amount_tstart').length){
+	    $('.ui-slider-handle:first').html('<div id="amount_tstart" class="ui-widget tooltip">' + tstxt + '</div>').hover(function(){
+			$(this).parent().find('.ui-slider-handle:last').css('z-index', '999')
+			$(this).css('z-index', '1000')
+	  	})
+	    $('.ui-slider-handle:last').html('<div id="amount_tend" class="ui-widget tooltip">' + tetxt + '</div>').hover(function(){
+			$(this).parent().find('.ui-slider-handle:first').css('z-index', '999')
+			$(this).css('z-index', '1000')
+	  	})
+	}	
+	
 	$('#checkmonths').attr('checked', false)
-	$('#skull').html('')
+	$('#skull').empty()
 	$('#months').attr('value','1')
 	$('#idvalue').attr('value', data.id)
 	$('#uservalue').attr('value', data.user)
 	$('#msgboxval').attr('value', decodeURIComponent(data.data || data.user))
 
 	$('#msgboxform').dialog({
-		resizable: false, width:600, title : weekdays[data.week] + ', ' + data.user, modal: true,
+		resizable: false, width:600, title : weekdays[data.week] + ', ' + data.user + (data.ts ? ', ' + data.ts : ''), modal: true,
 		open : function(e, ui){
+			/*
 			inter = setInterval(function(){
 				changerows()
-			}, 1000)
+			}, 500)
+			*/
 		},
 		buttons: {
 			"Сохранить": function() {
@@ -170,70 +205,79 @@ var inptr = function(e, object){
 
 var csend = function(arg, callback, needreload){
 	$.ajax({
-		dataType: "json",
+		dataType: 'json',
+		type : 'post',
 		url: 'core.php',
 		data: arg,
-		success: function(data){
+		success: function(response){
 			if (needreload) location.assign('/')
-			gdata = data
+			gdata = response
 			if(arg.action && arg.action == 'checkfield'){
-				$('#skull').tmpl('msgboxskull', gdata)
+				$('#skull').tmpl('skull', gdata)
 			} else {
-	  			$('#container').tmpl('datatemplate', gdata)
-				updateJs()
-				menu(gdata.menu)
-				InitContext()
+	  			$('#container').tmpl('maintemplate', gdata, function(){
+					updateJs()
+					menu(gdata.menu)
+					InitContext()
+				})
 			}
 			if(callback && typeof(callback) == 'function'){
 				callback()
 			}
 		},
+		error : function(){
+			$('#container, #data').empty()
+		}
 	})
 }
 
 
 function InitContext() { 
-	$('#menu').mouseleave(function() { 
-		$(this).hide() 
-  	})
+	var current = null
+	$('#menu').mouseleave(function(){$(this).hide()})
 
-	$(document).contextmenu(function(e) {
-		if(!$(e.target).attr('abbr') || !$(e.target).hasClass('marker')) return;
+	$('.marker').on('contextmenu', function(e) {
+		current = null
+		e.preventDefault()
+		if(!$(e.target).attr('abbr') || !$(e.target).hasClass('marker')) {
+			return
+		}
+		current = e.target
 		$('#menu').menu()
 		$('#menu').css({top : e.pageY - 16, left : e.pageX - 16 })
 		$('#menu').stop(true, true).fadeIn('fast')
-		return false 
 	})
 
-	$('#editrecord').click(function(e){
+	$('#editrecord').on('click', function(e){
 		var e = e
-		$('#menu').hide(100, function(){
-			var target = document.elementFromPoint(e.pageX - $(this).offset().left, e.pageY - $(this).offset().top)
-			inptr(e, $(target))
+		$('#menu').hide(0, function(){
+			if(current) {
+				inptr(e, $(current))
+			}
   		})
 	})
 
-	$('#deleterecord').click(function(e){
-  		var e = e
-		$('#menu').hide(100, function(){
-			var target = document.elementFromPoint(e.pageX - $(this).offset().left, e.pageY - $(this).offset().top)
-			var id = $(target).attr('abbr')
-			var data = gdata.markers[id]
-			data.tend = data.tend || ''
-			$('#prompt_window').html('<p>Вы действительно хотите удалить запись?</p>').dialog({
-				modal : true, title : 'Внимание!', resizable: false, width : 500,
-				buttons: {
-					Ok : function(){
-						csend({view : 'week', storage : 1, id : id, tstart : data.tstart, tend : data.tend })
-						$(this).dialog("close")
-						return
-					},
-					Cancel : function(){
-						$(this).dialog("close")
-						return
+	$('#deleterecord').on('click', function(e){
+		$('#menu').hide(0, function(){
+			if(current){
+				var id = $(current).attr('abbr')
+				var data = gdata.markers[id]
+				data.tend = data.tend || ''
+				$('#prompt_window').html('<p>Вы действительно хотите удалить запись?</p>').dialog({
+					modal : true, title : 'Внимание!', resizable: false, width : 500,
+					buttons: {
+						Ok : function(){
+							csend({view : 'week', storage : 1, id : id, tstart : data.tstart, tend : data.tend })
+							$(this).dialog("close")
+							return
+						},
+						Cancel : function(){
+							$(this).dialog("close")
+							return
+						}
 					}
-				}
-			})
+				})
+			}
 		})
 	})
 }
@@ -267,76 +311,13 @@ var menu = function(data){
 		.attr('abbr', data[v].id)
 		.css({ backgroundColor : data[v].color, borderTop : 'none', width : '100%', cursor : 'pointer', display : 'block' })
 		.html(data[v].text)
-		.on('click', function(){ csend({view : 'week', room : $(this).attr('abbr') }) })
+		.on('click', function(){ csend({ room : $(this).attr('abbr') }) })
 		.appendTo(menuholder_container)
 		
 		if(data[v].selected)
 			menuholder_caption.html(data[v].text).css({background : data[v].color, color : '#000'})
 	}
-}
-
-$.fn.colorPicker = function(func){
-	var colorxy = function (x, y) {
-		var decToHex = function(color){
-			var hex_char = "0123456789ABCDEF"; 
-			color = parseInt(color); 
-			return String(hex_char.charAt(Math.floor(color/16))) + String(hex_char.charAt(color - (Math.floor(color/16) * 16))); 
-		}
-		
-		var color = [255, 255, 255];
-		
-		if (x<32){
-			color[1]=x*8; color[2]=0;
-		} else if (x<64){
-			color[0]=256-(x-32 )*8; 
-			color[2]=0;
-		} else if (x<96){
-			color[0]=0;
-			color[2]=(x-64)*8;
-		} else if (x < 128){ 
-			color[0]=0;
-			color[1]=256 - (x - 96) * 8; 
-		} else if (x < 160){
-			color[0] = (x - 128) * 8; 
-			color[1] = 0; 
-		} else{
-			color[1] = 0;
-			color[2] = 256 - (x - 160) * 8; 
-		}
-		
-		for (var n = 0; n < 3; n++) {
-			if (y < 64) color[n] += (256 - color[n]) * (64 - y)/64;
-			else if (y <= 128) color[n] -= color[n] * (y - 64)/64;
-			else if (y > 128) color[n] = 256 - ( x/192 * 256 );
-			color[n] = Math.round(Math.min(color[n], 255));
-			color[n] = decToHex(color[n]);
-		}
-		return "#" + color.join('');
-	}
-
-	if(!$(this).find('.picker').get(0)){
-		$('<div class="picker">')
-		.hide()
-		.mouseleave(function(){
-			$(this).fadeOut(100).parent().css('background-color', $(this).attr('data-oldcolor'))
-		})
-		.mousemove(function(e){
-			$(this).parent().css('background-color', colorxy(e.clientX - $(this).offset().left, e.clientY - $(this).offset().top))
-		})
-		.click(function(e){
-			var color = colorxy(e.clientX - $(this).offset().left, e.clientY - $(this).offset().top, 'true')
-			$(this).hide()
-			func(color, $(this).parent())
-		}).appendTo($(this))
-	}
-	
-	$(this).click(function(e){
-		$(this).find('.picker')
-		.attr('data-oldcolor', $(this).css('background-color'))
-		.css({ left: $(this).offset().left + 15, top : $(this).offset().top + 15 })
-		.fadeIn(100)
-	})
-
+	menuholder_container.css({ top :  menuholder.offset().top + menuholder.height() })
 }
 
 var updateJs = function(){
@@ -369,8 +350,8 @@ var updateJs = function(){
 		$('td [abbr='+obj.id + ']').empty()
 		$('<div>')
 		.addClass('marker')
-		.attr({title: decodeURIComponent(obj.data), 'abbr' : obj.id})
-		.css({ height : obj.height, 'line-height': obj.height + 'px'})
+		.attr({title: decodeURIComponent(obj.data) + (obj.ts ? '\n\n' + obj.ts.replace(' ','\n') : ''), 'abbr' : obj.id})
+		.css({ height : obj.height,})
 		.text(obj.user)
 		.appendTo($('td [abbr='+obj.id + ']'))
 	}
@@ -383,11 +364,11 @@ var updateJs = function(){
 		}
 	})
 	
-	$('.mmo').click(function(){
-		csend({view:'week', date: $(this).attr('abbr')})
+	$('.mmo').on('click', function(){
+		csend({view : 'week', date: $(this).attr('abbr')})
 	})
 	
-	$('#menuholder').html('')
+	$('#menuholder').empty()
 	
 	$('html, document').tooltip({
 		show : 100,
@@ -404,14 +385,14 @@ var updateJs = function(){
 	
 	updateColors()
 	
-	$('#month1').datepicker({ 
+	$('#calen').datepicker({ 
 		changeMonth: true,
 		changeYear: true,
 		showButtonPanel : true,
-		defaultDate : gdata.year + '/' + (gdata.month > 9 ? gdata.month : '0'+gdata.month) + '/' + (gdata.day > 9 ? gdata.day : '0'+gdata.day),
-		onSelect: function(date){ csend({view:'week', date: (new Date(date)).getTime()/1000}) },
+		defaultDate : gdata.year + '/' + sprintf('%.2d', gdata.month) + '/' + sprintf('%.2d', gdata.day),
+		onSelect: function(date){ csend({view : 'week', date: (new Date(date)).getTime()/1000}) },
 		onChangeMonthYear: function(year, month){ 
-			csend({view:'week', date: (new Date(year, month-1, (new Date()).getDate())).getTime()/1000}) 
+			csend({view : 'week', date: (new Date(year, month-1, (new Date()).getDate())).getTime()/1000}) 
 		}
 	})
 	
@@ -430,7 +411,7 @@ var drawWeek = function(day, month, year) {
 	var trf = $('<tr/>')
 	trf.appendTo(table)
 
-	for(j=7; j<=22; j+=.5){
+	for(j=7; j<=22.5; j+=.5){
 		tm = ((j-intval(j)!=.5) ? j+":00":intval(j)+":30")
 		timestamp = ((j-intval(j)!=.5) ? j+":00":"")
 	  	var tr = $("<tr>")
@@ -444,7 +425,7 @@ var drawWeek = function(day, month, year) {
 			monthnow = intval(date("m", strtotime("- "+(i-week_day)+" days", strtotime(day+"-"+month+"-"+year+" "+tm))))
 			daynow = intval(date("j", strtotime("- "+(i-week_day)+" days", strtotime(day+"-"+month+"-"+year+" "+tm))))
 			field_id = strtotime(daynow+"-"+monthnow+"-"+year+" "+tm)
-			tclass = ((j==date("H", time())) ? "green_line":"") + ((i==date("N", time())) ? " back_green":"");
+			tclass = ((j==date("H", time())) ? "green_line":"") + ((i==date("N", time())) ? " back_green":"") + ((j%1==0)? " du":" dd");
 			
 	  		var td = $("<td abbr='" + field_id + "'" + (tclass ? " class='" + tclass + "'":"") + "></td>")
 			td.appendTo(tr)
@@ -557,5 +538,5 @@ var drawYear = function(year){
 
 
 $(function(){ 
-	csend({}) 
+   if (!gdata) csend({}) 
 })

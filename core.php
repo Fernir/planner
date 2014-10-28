@@ -14,17 +14,12 @@ if ($action == 'logout'){
   unset($_SESSION[user]);
 }
 
-$view = strip_tags($_REQUEST[view]);
-
 $user = $_SESSION[user];
 $addmonths = strip_tags($_REQUEST[addmonths]);
 $mode = strip_tags($_REQUEST[mode]);
 $userid = strip_tags($_REQUEST[userid]);
 $username = strip_tags($_REQUEST[username]);
 $accessval = strip_tags($_REQUEST[accessval]);
-$sortby = strip_tags($_REQUEST[sortby]);
-if ($_SESSION[sortby]=='') $_SESSION[sortby] = 'name';
-if ($sortby != '') $_SESSION[sortby] = $sortby;
 
 $roomid = strip_tags($_REQUEST[roomid]);
 $roomname = strip_tags($_REQUEST[roomname]);
@@ -56,10 +51,15 @@ $json = array();
 if ($_SESSION[year]=='') $_SESSION[year] = intval(date("Y", time()));
 if ($_SESSION[month]=='') $_SESSION[month] = intval(date("m", time()));
 if ($_SESSION[day]=='') $_SESSION[day] = intval(date("j", time()));
-if ($_SESSION[action]=='') $_SESSION[action] = "week";
 
-if(isset($view) && $view != '' && $_SESSION[action] != $view)
-  $_SESSION[action] = strval($view);
+if ($_SESSION[page]=='') {
+	$_SESSION[page] = "week";
+}
+
+if(isset($_REQUEST['view'])){
+  $_SESSION[page] = $_REQUEST['view'];
+}
+
 
 $datediff = strip_tags($_REQUEST['date']);
 $timeshtamp = strtotime("$_SESSION[day]-$_SESSION[month]-$_SESSION[year]");
@@ -210,7 +210,7 @@ if ($storage){
 	}
 }
 
-if ($_SESSION[action] == 'week'){
+if ($_SESSION[page] == 'week'){
 	if ($datediff=="+1"){
 		$_SESSION[year] = intval(date("Y", strtotime("+1 week", $timeshtamp)));
 		$_SESSION[month] = intval(date("m", strtotime("+1 week", $timeshtamp)));
@@ -228,7 +228,7 @@ if ($_SESSION[action] == 'week'){
 		$_SESSION[month] = intval(date("m", $datediff));
 		$_SESSION[day] = intval(date("j", $datediff));
 	}
-}elseif($_SESSION[action] == 'year'){
+}elseif($_SESSION[page] == 'year'){
 	if ($datediff=="+1"){
 		$_SESSION[year] = intval(date("Y", strtotime("+1 year", $timeshtamp)));
 		$_SESSION[month] = intval(date("m", strtotime("+1 year", $timeshtamp)));
@@ -246,7 +246,7 @@ if ($_SESSION[action] == 'week'){
 		$_SESSION[month] = intval(date("m", $datediff));
 		$_SESSION[day] = intval(date("j", $datediff));
 	}
-}elseif($_SESSION[action] == 'month'){
+}elseif($_SESSION[page] == 'month'){
 	if ($datediff=="+1"){
 		$_SESSION[year] = intval(date("Y", strtotime("+1 month", $timeshtamp)));
 		$_SESSION[month] = intval(date("m", strtotime("+1 month", $timeshtamp)));
@@ -264,7 +264,7 @@ if ($_SESSION[action] == 'week'){
 		$_SESSION[month] = intval(date("m", $datediff));
 		$_SESSION[day] = intval(date("j", $datediff));
 	}
-}elseif($_SESSION[action] == 'userlist'){
+}elseif($_SESSION[page] == 'userlist'){
 }
 
 
@@ -332,193 +332,6 @@ function checkField(){
 	}		
 }
 
-function drawRecords($time){
-	$out="<table class='nobordered' style='width:100%; font-size:.8em; margin-top:5px;'>";
-	$res = mysql_query("select id, user, data, tstart, tend, room from storage where room='".$_SESSION[room]."' order by id");
-	var_dump($time);
-	
-	while($ret=mysql_fetch_array($res, MYSQL_ASSOC)){ 
-		if (date("d-m-Y", $ret[id]) == date("d-m-Y", $time)){
-			$d = getData($ret[id]);
-			$out.= "<tr class='monthmarker' title='$ret[data]'><td style='padding:4px;'>$ret[tstart]-$ret[tend]</td><td style='padding:1px;'>[<span style='color:#bd0101'>$ret[user]</span>]</td></tr>";
-		}
-	}
-	mysql_free_result($res);
-	return $out."</table>";
-}
-
-function checkMonth($time){
-	$res = mysql_query("select id from storage where room='".$_SESSION[room]."' order by id");
-	while($ret=mysql_fetch_array($res, MYSQL_ASSOC)){ 
-		if (date("d-m-Y", $ret[id]) == date("d-m-Y", $time)){
-			mysql_free_result($res);
-			return true;
-		}
-	}
-	mysql_free_result($res);
-	return false;
-}
-
-function drawSmallMonth($date, $showyear=false) {
-	global $timeshtamp, $months, $weekdays;
-	if (!$month) $month = date("m", $date);
-	if (!$year) $year = date("Y", $date);
-		
-	$days_in_this_month = intval(date("t", mktime(0, 0, 0, $month, 1, $year)));
-	$days_in_prev_month = intval(date("t", mktime(0, 0, 0, $month-1, 1, $year)));
-	$week_day = intval(date("N", mktime(0, 0, 0, $month, 1, $year)));
-
-	$out.="<table class='border1px txtcontent' align='center'><tr><td colspan='7' class='thround'>".$months[$month-1]."".($showyear? ", $year" : "")."</td></tr>";
-	$counter=1;	
-	$first=$week_day; 
-	$oct=$week_day;
-	
-	if ($first > 1){
-		$start_prev = ($days_in_prev_month-$first+2);
-		$out.="<tr>";
-		for($days = 1; $days < $first; $days++) {
-			$ts = strtotime("$start_prev-".($month-1)."-$year 00:00");
-			if ($days>5){
-				$out.="<td class='back_gray mmo' abbr='$ts'>$start_prev</td>";
-			}else{
-				$out.="<td class='mmo' abbr='$ts'>$start_prev</td>";
-			}
-			$start_prev++;
-			$wd++;
-		}
-	}
-	
-	$week = 1;
-	for($days = $first; $days<=($days_in_this_month+$oct-1); $days++) {
-		$ts = strtotime("$counter-$month-$year 00:00");
-		$today = (date("d:m:Y", strtotime("$counter-$month-$year")) == date("d:m:Y", strtotime("now"))) ? " back_green":"";
-		if ($week_day==1) $out.="<tr>";
-		if ($days==$first){
-			if ($week_day>5){
-				$out.="<td class='back_gray mmo$today' abbr='$ts'>$counter</td>";
-			} elseif ($week==1) {
-				$out.="<td class='mmo$today' abbr='$ts'>$counter</td>";
-			} else {
-				$out.="<td class='mmo$today' abbr='$ts'>$counter</td>";
-			}	
-			$counter++;
-			$first++;
-		}else{
-			$out.="<td>&nbsp;</td>";
-		}
-		if ($week_day==7) {
-			$week++;
-			$out.="</tr>";
-		}
-		$week_day%=7;
-		$week_day++;
- 	}
-	
-	if ($week_day <= 7 && $week_day>1){
-		$wd=$week_day;
-		for($days = 1; $days <= (7-$week_day+1); $days++) {
-			$ts = strtotime("$days-".($month+1)."-$year 00:00");
-			if ($wd>5){
-				$out.="<td class='back_gray mmo' abbr='$ts'>$days</td>";
-			} else {
-				$out.="<td class='mmo' abbr='$ts'>$days</td>";
-			}
-			$wd++;
-		}
-		$out.="</tr>";
-	}
-	
-	$out.="</table>";
-	return $out;
-}
-
-
-function drawMonth($month=null, $year=null) {
-	global $timeshtamp, $months, $weekdays;
-	if (!$month) $month = intval(date("m", time()));
-	if (!$year) $year = intval(date("Y", time()));
-		
-	$days_in_this_month = intval(date("t", mktime(0, 0, 0, $month, 1, $year)));
-	$days_in_prev_month = intval(date("t", mktime(0, 0, 0, $month-1, 1, $year)));
-	$week_day = intval(date("N", mktime(0, 0, 0, $month, 1, $year)));
-
-	$bigarray = array();
-	
-	$fromtime = strtotime("01-$month-$year");
-	$totime = strtotime($days_in_this_month."-$month-$year");
-	$bigres = mysql_query("select id, user, data, tstart, tend from storage where (cast(id as unsigned) > $fromtime && cast(id as unsigned) < $totime) && room='$_SESSION[room]'");
-	while($ret=mysql_fetch_array($bigres, MYSQL_ASSOC))
-		$bigarray[$ret[id]] = $ret;
-	mysql_free_result($bigres);
-
-	$out.="<h1 style='padding-left:1em; text-align:left;'>".$months[$month-1].", $year</h1><table class='border1px txtcontent monthtable' align='center'>";
-	$counter=1;
-	$first=$week_day;
-	$oct=$week_day;
-	
-	if ($first > 1){
-		$start_prev = ($days_in_prev_month-$first+2);
-		$out.="<tr>";
-		for($days = 1; $days < $first; $days++) {
-			$ts = strtotime("$start_prev-".($month-1)."-$year 00:00");
-			if ($days>5){
-				$out.="<td width='14%' class='back_gray mmo' abbr='$ts'>".$weekdays[$days-1].", $start_prev".drawRecords($ts)."</td>";
-			}else{
-				$out.="<td width='14%' class='mmo' abbr='$ts'>".$weekdays[$days-1].", $start_prev".drawRecords($ts)."</td>";
-			}
-			$start_prev++;
-			$wd++;
-		}
-	}
-	
-	$week = 1;
-	for($days = $first; $days<=($days_in_this_month+$oct-1); $days++) {
-		$ts = strtotime("$counter-$month-$year 00:00");
-		if ($week_day==1) $out.="<tr>";
-		if ($days==$first){
-			if ($week_day>5){
-				if ($week==1) {
-					$out.="<td class='back_gray mmo' abbr='$ts'>".$weekdays[$week_day-1].", $counter".drawRecords($ts)."</td>";
-				}else{
-					$out.="<td class='back_gray mmo' abbr='$ts'>$counter".drawRecords($ts)."</td>";
-				}
-			} elseif ($week==1) {
-				$out.="<td class='mmo' abbr='$ts'>".$weekdays[$week_day-1].", $counter".drawRecords($ts)."</td>";
-			} else {
-				$out.="<td class='mmo' abbr='$ts'>$counter".drawRecords($ts)."</td>";
-			}	
-			$counter++;
-			$first++;
-		}else{
-			$out.="<td>&nbsp;</td>";
-		}
-		if ($week_day==7) {
-			$week++;
-			$out.="</tr>";
-		}
-		$week_day%=7;
-		$week_day++;
- 	}
-	
-	if ($week_day <= 7 && $week_day>1){
-		$wd=$week_day;
-		for($days = 1; $days <= (7-$week_day+1); $days++) {
-			$ts = strtotime("$days-".($month+1)."-$year 00:00");
-			if ($wd>5){
-				$out.="<td class='mmo back_gray'>$days".drawRecords($ts)."</td>";
-			} else {
-				$out.="<td class='mmo'>$days".drawRecords($ts)."</td>";
-			}
-			$wd++;
-		}
-		$out.="</tr>";
-	}
-	
-	$out.="</table>";
-	return $out;
-}
-
-
 function WeekJSON($day=null, $month=null, $year=null) {
 	global $months, $weekdays, $user, $json;
 	if (!$day) $day = intval(date("j", time())); 
@@ -530,17 +343,17 @@ function WeekJSON($day=null, $month=null, $year=null) {
 	
 	$fromtime = strtotime("-".($week_day-1)." days", strtotime("$day-$month-$year"));
 	$totime = strtotime("-".($week_day-8)." days", strtotime("$day-$month-$year"));
-	$bigres = mysql_query("select id, user, data, tstart, tend from storage where (cast(id as unsigned) > $fromtime && cast(id as unsigned) < $totime) && room='$_SESSION[room]'");
+	$bigres = mysql_query("select * from storage where (cast(id as unsigned) > $fromtime && cast(id as unsigned) < $totime) && room='$_SESSION[room]'");
 	while($ret=mysql_fetch_array($bigres, MYSQL_ASSOC))
 		$bigarray[$ret[id]] = $ret;
 	mysql_free_result($bigres);
 	
 	function isFieldLockedSmall($bigarray, $bigres, $id){
 		if ($bigarray[$id]){
-			$time = date("G:i", $id);
-			if (strtotime($time) >= strtotime($bigarray[$id][tstart]) && strtotime($time) < strtotime($bigarray[$id][tend])){
+			//$time = date("G:i", $id);
+			//if (strtotime($time) >= strtotime($bigarray[$id][tstart]) && strtotime($time) < strtotime($bigarray[$id][tend])){
 				return $bigarray[$id];
-			}
+			//}
 		}
 	}
 	
@@ -565,32 +378,16 @@ function WeekJSON($day=null, $month=null, $year=null) {
 	  				data => rawurlencode($lock[data] ? $lock[data]:$lock[user]),
 	  				height => $timeheight,
 	  				week => ($i - 1),
+					ts => $lock[ts] != "0000-00-00 00:00:00" ? $lock[ts] : '',
 	    		);
 			}
 		}
 	}
-	
-	$json['user'] = $user;
 }
 
-function drawYear($year){
-	$out="<h1 style='padding-left:1em;'>$year</h1><table cellpadding='10'>";
-	$counter=1;
-	for ($i=1; $i<=3; $i++){
-		$out.="<tr>";
-		for ($j=1; $j<=4; $j++){
-			$out.= "<td valign='top'>".drawSmallMonth(strtotime("1-$counter-$year"))."</td>"; 
-			$counter++;
-		}
-		$out.="</tr>";
-	}
-	$out.="</table>";
-	return $out;
-}
-
-$json['view'] = $_SESSION[action]; 
+$json['view'] = $_SESSION[page]; 
 $json['user'] = $_SESSION[user]; 
-$json['isadmin'] = $isAdmin; 
+$json['ia'] = $isAdmin; 
 $json['day'] = $_SESSION[day]; 
 $json['month'] = $_SESSION[month]; 
 $json['year'] = $_SESSION[year]; 
@@ -624,9 +421,9 @@ while($value = mysql_fetch_array($result, MYSQL_ASSOC)){
 }
 mysql_free_result($result);
 
-if ($_SESSION[action] = 'userlist') {
+if ($_SESSION[page] == 'userlist') {
 	// -- users
-	$result=mysql_query("select id, name, access from members order by $_SESSION[sortby]");
+	$result=mysql_query("select id, name, access from members");
 	while($row = mysql_fetch_array($result, MYSQL_ASSOC)){
 		$json['users'][] = array(
 			id => $row[id],
@@ -637,15 +434,13 @@ if ($_SESSION[action] = 'userlist') {
 	mysql_free_result($result);
 }
 
-if ($action && $action == 'checkfield'){
-	checkField();
-} else {
-	if ($_SESSION[action] = 'week') {
-		WeekJSON($_SESSION[day], $_SESSION[month], $_SESSION[year]);
-	}
+if ($action && $action == 'checkfield')	checkField();
+if ($_SESSION[page] == 'week') {
+	WeekJSON($_SESSION[day], $_SESSION[month], $_SESSION[year]);
 }
 
 print json_encode($json);
+
 
 mysql_close($con); 
 

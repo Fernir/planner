@@ -2,7 +2,7 @@
 //$con = mysql_connect("localhost", "plannerdb", "123qweASD") or die (mysql_error());
 $con = mysql_connect("localhost", "root", "") or die (mysql_error());
 
-//mysql_query("create database if not exists plannerdb DEFAULT CHARACTER SET utf8") or die (mysql_error());
+mysql_query("create database if not exists plannerdb DEFAULT CHARACTER SET utf8") or die (mysql_error());
 
 mysql_select_db("plannerdb") or die (mysql_error());
 
