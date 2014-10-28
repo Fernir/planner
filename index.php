@@ -21,6 +21,8 @@ require_once("config.php");
 <title>Бронирование переговорной</title>
 </head>
 <body>
+<noscript><h1 align="center" style="margin-top:20%; font-size:200%">Бронирование переговорных:<br>
+приложение работает только при поддержке JavaScript</h1></noscript>
 <div id="prompt_window"></div>
 <div id="data"></div>
 <div id="table_container"></div>

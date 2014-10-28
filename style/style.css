@@ -1,17 +1,14 @@
-@-viewport {
-width:device-width;
-}
 @charset "utf-8";
 * {
 	border-collapse:collapse;
-	font-family:arial
+	font-family:webdings;
 }
 body {
 	color:#2d3e50;
 	background:#d1d5d8;
 	margin:0;
 	padding:0;
-	font-size:75%
+	font-size:90%;
 }
 h1 {
 	font-size:150%
@@ -24,7 +21,7 @@ table.txtcontent td, table.txtcontent th {
 }
 table.border1px td, table.border1px th {
 	border:1px solid #bec3c7;
-	background:#fff
+	background:rgba(255,255,255,.5);
 }
 table.nobordered td, table.nobordered th {
 	border:none
@@ -39,8 +36,8 @@ table.nobordered td, table.nobordered th {
 	color:#ddd;
 	background:#475577;
 	vertical-align:middle;
-	text-decoration:none!important;
-transition:background .3s linear, color .2s linear, border .2s linear, box-shadow .2s linear
+	text-decoration:none;
+transition:all .3s ease-in-out
 }
 .button_sand:hover {
 	border:1px solid #000;
@@ -52,7 +49,7 @@ transition:background .3s linear, color .2s linear, border .2s linear, box-shado
 	background:#5e80a5
 }
 .button_sand.red {
-	background:#F63!important
+	background:#F63
 }
 .button_sand.small {
 	font-size:9px;
@@ -70,20 +67,20 @@ input, select, textarea {
 	outline:0;
 	border:1px solid #bbb;
 	margin:0;
-transition:background .2s linear, color .2s linear, border .2s linear, box-shadow .2s linear
+transition:all .2s ease-in-out
 }
 input:focus, select:hover, textarea:focus {
 	box-shadow:none;
 	border:1px solid #aaa
 }
-td.thround {
+table.border1px td.thround {
 	text-align:center;
-	border:none!important;
+	border:none;
 	color:#fff;
-	background:#475577!important
+	background:#475577
 }
-.back_gray {
-	background-color:#475577!important;
+table.border1px td.back_gray {
+	background-color:#475577;
 	color:#fff
 }
 .header {
@@ -93,9 +90,10 @@ td.thround {
 	background:#475577
 }
 .header_td input {
-	padding:0 2px!important
+	padding:0 2px
 }
 .marker {
+	border-radius:8px;
 	text-align:center;
 	vertical-align:middle;
 	cursor:pointer;
@@ -113,7 +111,7 @@ td.thround {
 div.menu {
 	color:#000;
 	background:#bbb;
-transition:border .2s linear
+transition:border .2s ease-in-out
 }
 div.menu:hover {
 	color:#000
@@ -127,43 +125,43 @@ div.menu:hover {
 }
 .monthmarker {
 	background-color:none;
-transition:background .2s linear, color .2s linear, border .2s linear
+transition:all .2s ease-in-out
 }
 .monthmarker:hover {
 	box-shadow:inset 0 0 2px rgba(0, 0, 0, .4);
 	background-color:#efefef
 }
-.green_line {
-	border-top:2px solid #27ae61 !important;
+table.border1px td.green_line {
+	border-top:2px solid #27ae61
 }
-.dd {
-	border-top:1px solid #bec3c7!important;
+table.border1px td.dd {
+	border-top:1px solid #bec3c7
 }
-.du {
-	border-bottom:1px solid white!important;
+table.border1px td.du {
+	border-bottom:1px solid rgba(255,255,255,0)
 }
-.back_green {
-	background-color:#ddffdd !important;
+table.border1px td.back_green {
+	background-color:#dfd
 }
-.back_green.du {
-	border-bottom:1px solid #ddffdd !important;
+table.border1px td.back_green.du {
+	border-bottom:1px solid #dfd
 }
-.mmo {
+table.border1px td.mmo {
 	width:14%;
 	cursor:pointer;
-transition:background .2s linear, color .2s linear, border .2s linear, opacity .2s linear, box-shadow .2s linear;
-	vertical-align:text-top!important;
+transition:all .2s ease-in-out;
+	vertical-align:text-top;
 	text-align:center
 }
-.mmo:hover {
+table.border1px td.mmo:hover {
 	box-shadow:inset 0 0 16px rgba(0, 0, 0, .1);
-	background:#d14841!important
+	background:#d14841
 }
 .small_user {
 	float:left;
 	display:inline;
 	padding:2px 1px 2px .5em;
-transition:background .2s linear, color .2s linear, border .2s linear, opacity .2s linear
+transition:all .2s ease-in-out
 }
 .small_user:hover {
 	border-radius:3px;
@@ -200,10 +198,10 @@ transition:background .2s linear, color .2s linear, border .2s linear, opacity .
 	margin:0;
 	padding:1px
 }
-.parent_container th {
-	border:none!important;
-	background:none!important;
-	font-weight:700!important
+.parent_container th.dates {
+	border:none;
+	background:0 0;
+	font-weight:700
 }
 .parent_container td {
 	cursor:pointer;
@@ -214,12 +212,12 @@ transition:background .2s linear, color .2s linear, border .2s linear, opacity .
 	min-height:20px;
 	height:20px
 }
-.num_offset {
-	border:none!important;
-	background:none!important;
-	min-width:1px!important;
-	width:1px!important;
-	cursor:default!important
+table.border1px td.num_offset {
+	border:none;
+	background:0 0;
+	min-width:1px;
+	width:1px;
+	cursor:default
 }
 .num_offset div {
 	margin-top:-1.5em;
@@ -237,12 +235,12 @@ transition:background .2s linear, color .2s linear, border .2s linear, opacity .
 	text-align:center;
 	border:2px solid #555!important;
 	background-color:#fff;
-	box-shadow:0 0 5px rgba(0, 0, 0, .4);
+	box-shadow:0 0 5px rgba(0, 0, 0, .4)
 }
 .tooltip {
 	border-radius:4px;
 	padding:.5em;
-	border:2px solid #555!important;
+	border:2px solid #555;
 	background-color:#fff;
 	box-shadow:0 0 5px rgba(0, 0, 0, .4);
 	text-decoration:none;
@@ -254,7 +252,7 @@ transition:background .2s linear, color .2s linear, border .2s linear, opacity .
 	text-align:center;
 	font-size:10px
 }
-.ui-tooltip:before, .ui-tooltip:after, .tooltip:before, .tooltip:after {
+.tooltip:after, .tooltip:before, .ui-tooltip:after, .ui-tooltip:before {
 	content:'';
 	position:absolute;
 	bottom:-8px;
@@ -264,12 +262,12 @@ transition:background .2s linear, color .2s linear, border .2s linear, opacity .
 	height:0;
 	border-left:6px solid transparent;
 	border-right:6px solid transparent;
-	border-top:6px solid #555;
+	border-top:6px solid #555
 }
-.ui-tooltip:after, .tooltip:after {
+.tooltip:after, .ui-tooltip:after {
 	bottom:-6px;
 	margin-left:-6px;
-	border-top:6px solid #fff;
+	border-top:6px solid #fff
 }
 .slide_small.closed:after {
 	content:'\002b'
