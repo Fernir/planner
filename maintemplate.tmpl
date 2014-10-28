@@ -3,18 +3,18 @@
     	<td class="header">
 	    	<div style="float:left;">
 		    {{? it.view != 'roomlist' && it.view != 'userlist' }} 
-				<span style="font-size:1.7em; color:#ffffff; line-height:20px; vertical-align:middle;">Бронирование&nbsp;переговорной&nbsp;</span>
+				<span style="font-size:1.7em; color:#ffffff; line-height:20px; vertical-align:middle;">Р‘СЂРѕРЅРёСЂРѕРІР°РЅРёРµ&nbsp;РїРµСЂРµРіРѕРІРѕСЂРЅРѕР№&nbsp;</span>
 		      	<span id="selectroom" style="text-align:center;"></span>
 				{{? it.ia }}
-				<a class="button_sand" onclick="csend({view:'roomlist'})">изменить</a>
+				<a class="button_sand" onclick="csend({view:'roomlist'})">РёР·РјРµРЅРёС‚СЊ</a>
 				{{?}}      
 			{{?}}
 			</div>  
-      		<div style="float:right"><span class='button_sand' onclick="csend({view : 'week', action:'logout'}, null, true)">{{=it.user}} - выход</span>
+      		<div style="float:right"><span class='button_sand' onclick="csend({view : 'week', action:'logout'}, null, true)">{{=it.user}} - РІС‹С…РѕРґ</span>
 			{{? it.ia && it.view != 'userlist' }}
-				<a class="button_sand" onclick="csend({view:'userlist'})">пользователи</a>
+				<a class="button_sand" onclick="csend({view:'userlist'})">РїРѕР»СЊР·РѕРІР°С‚РµР»Рё</a>
 			{{?}}
-        	<a class="button_sand" onclick="csend({view:'week'})">неделя</a> <a class="button_sand" onclick="csend({view:'month'})">месяц</a> <a class="button_sand" onclick="csend({view:'year'})">год</a>
+        	<a class="button_sand" onclick="csend({view:'week'})">РЅРµРґРµР»СЏ</a> <a class="button_sand" onclick="csend({view:'month'})">РјРµСЃСЏС†</a> <a class="button_sand" onclick="csend({view:'year'})">РіРѕРґ</a>
        		</div>
 		</td>
 	</tr>
@@ -41,12 +41,12 @@
 			{{?? it.view == 'year' }}
 				{{=drawYear(it.year) }}
 			{{?? it.view == 'userlist' && it.ia }}
-	  			<h1 align="center">Список пользователей</h1>
+	  			<h1 align="center">РЎРїРёСЃРѕРє РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№</h1>
 	  			<br>
 	  			<table class="border1px nobordered txtcontent" style="text-align:center; width:360px;">
 	  				<tr>
-	  					<td class="thround">Пользователь</td>
-	  					<td class="thround" colspan="2">Доступ</td>
+	  					<td class="thround">РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ</td>
+	  					<td class="thround" colspan="2">Р”РѕСЃС‚СѓРї</td>
 	  				</tr>
 	  				{{~it.users :value:index}}
 	  				<tr>
@@ -54,12 +54,12 @@
 	  					<td nowrap>
 	  						<select id="msel{{=value.id}}" onchange="csend({view:'userlist', mode:'setaccess', userid:{{=value.id}}, accessval: this[this.selectedIndex].value})" style="width:100%">
 	  							<option value='0'></option>
-	  							<option value='1' {{? value.access==1}}selected=true{{?}}>Администратор</option>
+	  							<option value='1' {{? value.access==1}}selected=true{{?}}>РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ</option>
 	  						</select>
 						</td>
 						<td style="width:1px;">
 	  						{{? it.ia}}
-	  						<a class='button_sand small' onclick="dodialog('<p>Вы действительно хотите удалить пользователя <b>{{=value.name}}</b>?</p>','csend({view:\'userlist\', mode:\'deleteuser\', userid:{{=value.id}}})')" />&times;</a>
+	  						<a class='button_sand small' onclick="dodialog('<p>Р’С‹ РґРµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ С…РѕС‚РёС‚Рµ СѓРґР°Р»РёС‚СЊ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ <b>{{=value.name}}</b>?</p>','csend({view:\'userlist\', mode:\'deleteuser\', userid:{{=value.id}}})')" />&times;</a>
 	  						{{?}}
 	  					</td>
 	  				</tr>
@@ -67,7 +67,7 @@
 	  				{{? it.ia }}
 	  				<tr>
 	  					<td colspan='3' style='border:none;' align='center'>
-	  						<input id='username' type='text' style='margin:3px; width:70%;'/><a class='button_sand' onclick="csend({view:\'userlist\', mode:'adduser', username: $('#username').val()})">Добавить</a>
+	  						<input id='username' type='text' style='margin:3px; width:70%;'/><a class='button_sand' onclick="csend({view:\'userlist\', mode:'adduser', username: $('#username').val()})">Р”РѕР±Р°РІРёС‚СЊ</a>
 	  					</td>
 	  				</tr>
 	  				{{?}}
@@ -76,7 +76,7 @@
 			<br><br><br><br>
 			<table class='border1px txtcontent' style='text-align:center; width:800px;'>
 				<tr>
-					<td colspan='4' class='thround'>Список переговорных</td>
+					<td colspan='4' class='thround'>РЎРїРёСЃРѕРє РїРµСЂРµРіРѕРІРѕСЂРЅС‹С…</td>
 				</tr>
 				{{~it.menu :value:index}}
 				<tr>
@@ -90,7 +90,7 @@
 						<div class='colorpicker' id='color{{=value.id}}' style='background:{{=value.color}}; height:20px; width:20px;'></div>
 					</td>
 					<td style='background:#efefef;width:1px;'>
-						<a class='button_sand small' onclick="dodialog('<p>Вы действительно хотите удалить переговорную <b>{{=value.text}}</b> и все ее записи?</p>', 'csend({view:\'roomlist\', mode:\'deleteroom\', roomid:{{=value.id}}})')" />&times;</a>
+						<a class='button_sand small' onclick="dodialog('<p>Р’С‹ РґРµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ С…РѕС‚РёС‚Рµ СѓРґР°Р»РёС‚СЊ РїРµСЂРµРіРѕРІРѕСЂРЅСѓСЋ <b>{{=value.text}}</b> Рё РІСЃРµ РµРµ Р·Р°РїРёСЃРё?</p>', 'csend({view:\'roomlist\', mode:\'deleteroom\', roomid:{{=value.id}}})')" />&times;</a>
 					</td>
 				</tr>
 				<tr>
@@ -100,14 +100,14 @@
 						<div class='small_user'>{{=val.user}}<a onclick="csend({view:'roomlist', mode: 'deleteroomuser', roomid : {{=value.id}}, username : '{{=val.user}}' })" style="cursor:pointer">&times;</a></div>
 						{{~}}
 						</div>
-						<div style='clear:both;'><input id='username{{=value.id}}' type='text' style='width:80%;' />&nbsp;<a class='button_sand' onclick="csend({view:'roomlist', mode: 'addroomuser', roomid : {{=value.id}}, username : $('#username{{=value.id}}').val() })">Добавить</a></div>
+						<div style='clear:both;'><input id='username{{=value.id}}' type='text' style='width:80%;' />&nbsp;<a class='button_sand' onclick="csend({view:'roomlist', mode: 'addroomuser', roomid : {{=value.id}}, username : $('#username{{=value.id}}').val() })">Р”РѕР±Р°РІРёС‚СЊ</a></div>
 					</td>
 				</tr>
 				{{~}}
 				{{? it.ia}}
 				<tr>
 					<td colspan='4' style='background:#efefef; padding:1em; border:none; text-align:center; '>
-						<input id='roomname' type='text' style='width:80%;' />&nbsp;<a class='button_sand' onclick="csend({view:'roomlist', mode: 'addroom', roomname : $('#roomname').val() })">Добавить</a>
+						<input id='roomname' type='text' style='width:80%;' />&nbsp;<a class='button_sand' onclick="csend({view:'roomlist', mode: 'addroom', roomname : $('#roomname').val() })">Р”РѕР±Р°РІРёС‚СЊ</a>
 					</td>
 				</tr>
 				{{?}}
