@@ -1,7 +1,7 @@
-planner
+<h1>planner</h1>
 =======
 
-Simple room using time manager
+<p>Booking rooms manager</p>
 <p>
 	<img src="http://i.imgur.com/OE2Kizw.png" />
 </p>
