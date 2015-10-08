@@ -25,15 +25,16 @@ $roomid = strip_tags($_REQUEST[roomid]);
 $roomname = strip_tags($_REQUEST[roomname]);
 $roomcolor = strip_tags($_REQUEST[roomcolor]);
 
-if (intval($_SESSION[room])==0) $_SESSION[room] = '1';
-$room = intval(strip_tags($_REQUEST[room]));
+if (floor($_SESSION[room])==0) $_SESSION[room] = '1';
+$room = floor(strip_tags($_REQUEST[room]));
 $maxroom = mysql_result(mysql_query("select max(id) from headers"), 0);
-if (intval($room) != 0 && intval($room) <= $maxroom) $_SESSION[room] = intval($room);
+if (floor($room) != 0 && floor($room) <= $maxroom) $_SESSION[room] = floor($room);
 
 $roomlist = getRoomList();
 $arr = array();
-foreach($roomlist as &$value) 
+foreach($roomlist as &$value){
 	$arr[] = $value[id];
+}
 if (!in_array($_SESSION[room], $arr)){
 	foreach($roomlist as &$value) {
 		$_SESSION[room] = $value[id]; 
@@ -48,9 +49,9 @@ $tend = strip_tags($_REQUEST[tend]);
 $data = strip_tags($_REQUEST[data]);
 $json = array();
 
-if ($_SESSION[year]=='') $_SESSION[year] = intval(date("Y", time()));
-if ($_SESSION[month]=='') $_SESSION[month] = intval(date("m", time()));
-if ($_SESSION[day]=='') $_SESSION[day] = intval(date("j", time()));
+if ($_SESSION[year]=='') $_SESSION[year] = floor(date("Y", time()));
+if ($_SESSION[month]=='') $_SESSION[month] = floor(date("m", time()));
+if ($_SESSION[day]=='') $_SESSION[day] = floor(date("j", time()));
 
 if ($_SESSION[page]=='') {
 	$_SESSION[page] = "week";
@@ -64,6 +65,7 @@ if(isset($_REQUEST['view'])){
 $datediff = strip_tags($_REQUEST['date']);
 $timeshtamp = strtotime("$_SESSION[day]-$_SESSION[month]-$_SESSION[year]");
 $bgcolor = mysql_fetch_array(mysql_query("select color from headers where id='$_SESSION[room]'"));
+
 
 
 function getRoomList(){
@@ -156,9 +158,9 @@ if ($storage){
 			if ($ret[user] == $_SESSION[user] || $isAdmin){
 				if ($addmonths){
 					$msday = $id;
-					$weekday = intval(date("N", $id));
+					$weekday = floor(date("N", $id));
 					while($msday < strtotime("+$addmonths months", $id)){
-						$idweekday = intval(date("N", $msday));
+						$idweekday = floor(date("N", $msday));
 						if ($idweekday == $weekday && !isFieldLocked($msday)){
 							mysql_query("delete from storage where id='$msday' && room='$_SESSION[room]'") or die (mysql_error());
 							mysql_query("insert into storage (id, user, data, tstart, tend, room) values('$msday', '$user', '".strip_tags($data)."', '$tstart', '$tend', '$_SESSION[room]')") or die (mysql_error());
@@ -175,9 +177,9 @@ if ($storage){
 			} elseif ($ret[user] == ''){
 				if ($addmonths){
 					$msday = $id;
-					$weekday = intval(date("N", $id));
+					$weekday = floor(date("N", $id));
 					while($msday < strtotime("+$addmonths months", $id)){
-						$idweekday = intval(date("N", $msday));
+						$idweekday = floor(date("N", $msday));
 						if ($idweekday == $weekday && !isFieldLocked($msday)){
 							mysql_query("insert into storage (id, user, data, tstart, tend, room) values('$msday', '$user', '".strip_tags($data)."', '$tstart', '$tend', '$_SESSION[room]')") or die (mysql_error());
 							}
@@ -194,9 +196,9 @@ if ($storage){
 			if ($ret[user] == $_SESSION[user] || $isAdmin){
 				if ($addmonths){
 					$msday = $id;
-					$weekday = intval(date("N", $id));
+					$weekday = floor(date("N", $id));
 					while($msday < strtotime("+$addmonths months", $id)){
-						$idweekday = intval(date("N", $msday));
+						$idweekday = floor(date("N", $msday));
 						if ($idweekday == $weekday){
 							mysql_query("delete from storage where id='$msday' && room='$_SESSION[room]'") or die (mysql_error());
 							}
@@ -212,132 +214,104 @@ if ($storage){
 
 if ($_SESSION[page] == 'week'){
 	if ($datediff=="+1"){
-		$_SESSION[year] = intval(date("Y", strtotime("+1 week", $timeshtamp)));
-		$_SESSION[month] = intval(date("m", strtotime("+1 week", $timeshtamp)));
-		$_SESSION[day] = intval(date("j", strtotime("+1 week", $timeshtamp)));
+		$_SESSION[year] = floor(date("Y", strtotime("+1 week", $timeshtamp)));
+		$_SESSION[month] = floor(date("m", strtotime("+1 week", $timeshtamp)));
+		$_SESSION[day] = floor(date("j", strtotime("+1 week", $timeshtamp)));
 	}elseif($datediff=='-1'){
-		$_SESSION[year] = intval(date("Y", strtotime("-1 week", $timeshtamp)));
-		$_SESSION[month] = intval(date("m", strtotime("-1 week", $timeshtamp)));
-		$_SESSION[day] = intval(date("j", strtotime("-1 week", $timeshtamp)));
+		$_SESSION[year] = floor(date("Y", strtotime("-1 week", $timeshtamp)));
+		$_SESSION[month] = floor(date("m", strtotime("-1 week", $timeshtamp)));
+		$_SESSION[day] = floor(date("j", strtotime("-1 week", $timeshtamp)));
 	}elseif($datediff=='0'){
-		$_SESSION[year] = intval(date("Y", time()));
-		$_SESSION[month] = intval(date("m", time()));
-		$_SESSION[day] = intval(date("j", time()));
+		$_SESSION[year] = floor(date("Y", time()));
+		$_SESSION[month] = floor(date("m", time()));
+		$_SESSION[day] = floor(date("j", time()));
 	}elseif($datediff!=''){
-		$_SESSION[year] = intval(date("Y", $datediff));
-		$_SESSION[month] = intval(date("m", $datediff));
-		$_SESSION[day] = intval(date("j", $datediff));
+		$_SESSION[year] = floor(date("Y", $datediff));
+		$_SESSION[month] = floor(date("m", $datediff));
+		$_SESSION[day] = floor(date("j", $datediff));
 	}
 }elseif($_SESSION[page] == 'year'){
 	if ($datediff=="+1"){
-		$_SESSION[year] = intval(date("Y", strtotime("+1 year", $timeshtamp)));
-		$_SESSION[month] = intval(date("m", strtotime("+1 year", $timeshtamp)));
-		$_SESSION[day] = intval(date("j", strtotime("+1 year", $timeshtamp)));
+		$_SESSION[year] = floor(date("Y", strtotime("+1 year", $timeshtamp)));
+		$_SESSION[month] = floor(date("m", strtotime("+1 year", $timeshtamp)));
+		$_SESSION[day] = floor(date("j", strtotime("+1 year", $timeshtamp)));
 	}elseif($datediff=='-1'){
-		$_SESSION[year] = intval(date("Y", strtotime("-1 year", $timeshtamp)));
-		$_SESSION[month] = intval(date("m", strtotime("-1 year", $timeshtamp)));
-		$_SESSION[day] = intval(date("j", strtotime("-1 year", $timeshtamp)));
+		$_SESSION[year] = floor(date("Y", strtotime("-1 year", $timeshtamp)));
+		$_SESSION[month] = floor(date("m", strtotime("-1 year", $timeshtamp)));
+		$_SESSION[day] = floor(date("j", strtotime("-1 year", $timeshtamp)));
 	}elseif($datediff=='0'){
-		$_SESSION[year] = intval(date("Y", time()));
-		$_SESSION[month] = intval(date("m", time()));
-		$_SESSION[day] = intval(date("j", time()));
+		$_SESSION[year] = floor(date("Y", time()));
+		$_SESSION[month] = floor(date("m", time()));
+		$_SESSION[day] = floor(date("j", time()));
 	}elseif($datediff!=''){
-		$_SESSION[year] = intval(date("Y", $datediff));
-		$_SESSION[month] = intval(date("m", $datediff));
-		$_SESSION[day] = intval(date("j", $datediff));
+		$_SESSION[year] = floor(date("Y", $datediff));
+		$_SESSION[month] = floor(date("m", $datediff));
+		$_SESSION[day] = floor(date("j", $datediff));
 	}
 }elseif($_SESSION[page] == 'month'){
 	if ($datediff=="+1"){
-		$_SESSION[year] = intval(date("Y", strtotime("+1 month", $timeshtamp)));
-		$_SESSION[month] = intval(date("m", strtotime("+1 month", $timeshtamp)));
-		$_SESSION[day] = intval(date("j", strtotime("+1 month", $timeshtamp)));
+		$_SESSION[year] = floor(date("Y", strtotime("+1 month", $timeshtamp)));
+		$_SESSION[month] = floor(date("m", strtotime("+1 month", $timeshtamp)));
+		$_SESSION[day] = floor(date("j", strtotime("+1 month", $timeshtamp)));
 	}elseif($datediff=='-1'){
-		$_SESSION[year] = intval(date("Y", strtotime("-1 month", $timeshtamp)));
-		$_SESSION[month] = intval(date("m", strtotime("-1 month", $timeshtamp)));
-		$_SESSION[day] = intval(date("j", strtotime("-1 month", $timeshtamp)));
+		$_SESSION[year] = floor(date("Y", strtotime("-1 month", $timeshtamp)));
+		$_SESSION[month] = floor(date("m", strtotime("-1 month", $timeshtamp)));
+		$_SESSION[day] = floor(date("j", strtotime("-1 month", $timeshtamp)));
 	}elseif($datediff=='0'){
-		$_SESSION[year] = intval(date("Y", time()));
-		$_SESSION[month] = intval(date("m", time()));
-		$_SESSION[day] = intval(date("j", time()));
+		$_SESSION[year] = floor(date("Y", time()));
+		$_SESSION[month] = floor(date("m", time()));
+		$_SESSION[day] = floor(date("j", time()));
 	}elseif($datediff!=''){
-		$_SESSION[year] = intval(date("Y", $datediff));
-		$_SESSION[month] = intval(date("m", $datediff));
-		$_SESSION[day] = intval(date("j", $datediff));
+		$_SESSION[year] = floor(date("Y", $datediff));
+		$_SESSION[month] = floor(date("m", $datediff));
+		$_SESSION[day] = floor(date("j", $datediff));
 	}
 }elseif($_SESSION[page] == 'userlist'){
 }
 
 
-function checkField(){
-	global $json;
+function checkConflict(){
+	global $isAdmin, $json;
 	$id = strip_tags($_REQUEST[id]);
-	$user = strip_tags($_REQUEST[user]);
 	$addmonths = strip_tags($_REQUEST[addmonths]);
 	$tstart = strip_tags($_REQUEST[tstart]);
 	$tend = strip_tags($_REQUEST[tend]);
 		
-	function isLocked($tm){
-		global $tstart, $tend, $id, $addmonths, $isAdmin, $json;
-		$curdate = date("d-m-Y", $tm);
-		$res = mysql_query("select id, tstart, tend, user from storage where room='$_SESSION[room]' and id != '$id'") or die (mysql_error());
+	if ($id){
+		$curdate = $addmonths ? date("N", $id) : date("d-m-Y", $id);
+		$res = mysql_query("select id, tstart, tend, user from storage where room=$_SESSION[room] and id > $id") or die (mysql_error());
 		while($ret=mysql_fetch_array($res, MYSQL_ASSOC)){ 
-		  	if (date("d-m-Y", $ret[id]) == $curdate){
+		  	if (($addmonths ? date("N", $ret[id]) : date("d-m-Y", $ret[id])) == ($addmonths ? date("N", $id) : date("d-m-Y", $id))){
 				$t1 = strtotime($tstart); 
 				$t1e = strtotime($tend);
 				$t2 = strtotime($ret[tstart]); 
 				$t2e = strtotime($ret[tend]);
 				
-				$start = array('start' => $t1, 'end' => $t1e);
-				$end = array('start' => $t2, 'end' => $t2e);
-		
 				if (($t1 >= $t2 && $t1 < $t2e) || ($t1e > $t2 && $t1e <= $t2e) || ($t1 <= $t2 && $t1e > $t2e)){
 				  	$json['conflict'] = array(
 				  		id => $ret[id],
 				  		user => $ret[user],
-				  		start => $tstart,
-				  		end => $tend,
+				  		start => $ret[tstart],
+						week => date("N", $ret[id])-1,
+						date => date("d-m-Y", $ret[id]),
+				  		end => $ret[tend],
 				  	);
 					
-					/*
-					if($isAdmin){
-						$outp .= "<br><a class='button_sand red' onclick=\"dodialog('<p>Вы действительно хотите удалить запись?</p>','csend({storage:1, id:$ret[id], tstart:\'$tstart\', tend:\'$tend\'})')\">удалить конфликтующую запись</a>
-						<script>$('div [abbr=\"$ret[id]\"]').effect('highlight', {}, 700);</script>";
-					}
-					*/
 					mysql_free_result($res);
 					return;
 				}
 			}
 		}
 		mysql_free_result($res);
-		return "";
-	}
-	
-	if ($id && $addmonths){
-		$diff = strtotime("now +1 day") - strtotime("now");
-		$count = strtotime("+$addmonths months", $id);
-		$msday = $id;
-		$weekday = intval(date("N", $id));
-		while($msday < strtotime("+$addmonths months", $id)){
-			$idweekday = intval(date("N", $msday));
-			if ($idweekday == $weekday){
-		  		if (isLocked($msday)){
-		  			return;
-		  		}
-			}
-			$msday += $diff;
-	  	}
-	} elseif ($id) {
-		isLocked($id);
 	}		
 }
 
 function WeekJSON($day=null, $month=null, $year=null) {
 	global $months, $weekdays, $user, $json;
-	if (!$day) $day = intval(date("j", time())); 
-	if (!$month) $month = intval(date("m", time())); 
-	if (!$year) $year = intval(date("Y", time()));
-	$week_day = intval(date("N", mktime(0, 0, 0, $month, $day, $year)));
+	if (!$day) $day = floor(date("j", time())); 
+	if (!$month) $month = floor(date("m", time())); 
+	if (!$year) $year = floor(date("Y", time()));
+	$week_day = floor(date("N", mktime(0, 0, 0, $month, $day, $year)));
 	
 	$bigarray = array();
 	
@@ -350,26 +324,22 @@ function WeekJSON($day=null, $month=null, $year=null) {
 	
 	function isFieldLockedSmall($bigarray, $bigres, $id){
 		if ($bigarray[$id]){
-			//$time = date("G:i", $id);
-			//if (strtotime($time) >= strtotime($bigarray[$id][tstart]) && strtotime($time) < strtotime($bigarray[$id][tend])){
-				return $bigarray[$id];
-			//}
+			return $bigarray[$id];
 		}
 	}
 	
 	$divs = array();
-	for($j=7; $j<=22; $j+=.5){
-		$tm = (($j-intval($j)!=.5) ? "$j:00":intval($j).":30");
-		$timestamp = (($j-intval($j)!=.5) ? "$j:00":"");
+	for($j=7; $j<=22.5; $j+=.5){
+		$tm = (($j-floor($j)!=.5) ? "$j:00":floor($j).":30");
 		for ($i=1; $i<=7; $i++){
-			$monthnow = date("m", strtotime("-".($week_day-$i)." day", strtotime("$day-$month-$year $tm")));
-			$daynow = intval(date("j", strtotime("-".($week_day-$i)." day", strtotime("$day-$month-$year $tm"))));
+			$monthnow = date("m", strtotime("-".($i-$week_day)." day", strtotime("$day-$month-$year $tm")));
+			$daynow = floor(date("j", strtotime("-".($i-$week_day)." day", strtotime("$day-$month-$year $tm"))));
 			$field_id = strtotime("$daynow-$monthnow-$year $tm");
 			if ($divs[$field_id]) continue;
 			$lock = isFieldLockedSmall($bigarray, $bigres, $field_id);
 			if ($lock[id] > 0 && !$divs[$lock[id]]){
 				$divs[$lock[id]] = 1;
-				$timeheight = (((strtotime($lock[tend]) - strtotime($lock[tstart]))/60/60)*2)*(20+1);
+				$timeheight = (((strtotime($lock[tend]) - strtotime($lock[tstart]))/60/60)*2)*(20);
 	  			$json['markers'][$field_id] = array(
 	  				id => $field_id,
 	  				tstart => ($lock[tstart] ? $lock[tstart]:$tm),
@@ -392,6 +362,7 @@ $json['day'] = $_SESSION[day];
 $json['month'] = $_SESSION[month]; 
 $json['year'] = $_SESSION[year]; 
 $json['room'] = $_SESSION[room]; 
+//$json['timestamp'] = time();
 
 // -- rooms
 $result = mysql_query("select * from headers order by name");
@@ -434,7 +405,10 @@ if ($_SESSION[page] == 'userlist') {
 	mysql_free_result($result);
 }
 
-if ($action && $action == 'checkfield')	checkField();
+if ($action && $action == 'checkfield')	{
+	checkConflict();
+}
+
 if ($_SESSION[page] == 'week') {
 	WeekJSON($_SESSION[day], $_SESSION[month], $_SESSION[year]);
 }
