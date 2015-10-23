@@ -4,6 +4,7 @@
 	box-sizing: inherit;
 	font-family: "Open Sans", Helvetica, Arial, sans-serif;
 	table-layout: fixed;
+	border-collapse: collapse;
 }
 
 html {
@@ -45,7 +46,7 @@ table.nobordered td, table.nobordered th { border:none }
 	height: 28px;
 	transition:all .2s linear;
 }
-.button_sand:hover {
+.button_sand:hover, .button_sand:focus {
 	border:1px solid #000;
 	box-shadow:inset 0 0 2px rgba(0, 0, 0, .2);
 	color:#fff;
@@ -57,9 +58,20 @@ table.nobordered td, table.nobordered th { border:none }
 .button_sand.small {
 	font-size:9px !important;
 }
+
+input[type="text"].button_sand, input[type="text"].button_sand:hover, input[type="text"].button_sand:focus, input[type="text"].button_sand:active, 
+input[type="password"].button_sand, input[type="password"].button_sand:hover, input[type="password"].button_sand:focus, input[type="password"].button_sand:active,
+select.button_sand, select.button_sand:hover, select.button_sand:active, select.button_sand:focus {
+	color: #333;
+	background-color: #fff;
+	box-shadow: inset 0 0 2px rgba(0,0,0,.2);
+}
+
+textarea {
+	padding: 0 5px;
+}
+
 table.border1px td.back_gray {
-	border-left:none;
-	border-top:none;
 	background-color:#475577;
 	color:#fff
 }
@@ -79,6 +91,7 @@ table.border1px td.back_gray.light_gray {
 }
 .marker {
 	box-shadow: 0px 0px 6px rgba(0,0,0,.4) inset;
+	border-radius: 5px;
 	display: block;
 	position:absolute;
 	text-align:center;
@@ -92,24 +105,17 @@ table.border1px td.back_gray.light_gray {
 	font-size: 10px;
 	filter:alpha(opacity=70);
 }
-.marker::before {
+
+.tooltip {
 	position: absolute;
 	background: rgba(0, 0, 0, .8);
 	border-radius: 8px;
 	box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
 	color: #fff;
-	content: attr(data-tooltip); /* Главная часть кода, определяющая содержимое всплывающей подсказки */
-	padding: 3px 0px;
-	margin-top: -25px;
-	opacity: 0;
-	visibility: hidden; /* ...и скрыт. */
-	transition: all .2s linear;
+	padding: 5px 10px;
+	transition: opacity .2s linear;
 }
-		
-.marker:hover::before {
-	opacity: 1;
-	visibility: visible;
-}
+
 div.menu {
 	color: #000;
 	background: #bbb;
@@ -171,13 +177,11 @@ table.border1px td.mmo:hover {
 	margin:0;
 	padding:1px
 }
-.parent_container {
-	border-collapse: collapse;
-}
 .parent_container th.dates {
-	border:none;
-	background:0 0;
-	font-weight:700
+	border: none;
+	background: none;
+	font-weight: bold;
+	font-size:10px;
 }
 .parent_container td {
 	cursor:pointer;
@@ -187,21 +191,19 @@ table.border1px td.mmo:hover {
 }
 table.border1px td.num_offset {
 	border:none;
-	background:0 0;
+	background: none;
 	min-width:1px;
 	width:1px;
-	cursor:default
+	cursor:default;
 }
 .num_offset div {
 	margin-top:-10px;
 	padding-right:5px;
+	text-align: right;
 }
 .num_offset_today {
 	color:#00ab22;
 	font-weight:700
-}
-.dates {
-	font-size:10px;
 }
 .monthtable {
 	width:100%;
@@ -218,7 +220,10 @@ table.border1px td.num_offset {
 	width: 14.28%;
 }
 
-.parent_container td, .marker, .marker::before {
+.parent_container td, .marker {
 	width: 90px;
 	min-width: 90px;
+}
+.transition_all {
+	transition: all .1s linear;
 }

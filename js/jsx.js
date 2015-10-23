@@ -72,8 +72,8 @@ var PlannerHeader = React.createClass({
                     )}
                 </div>
                 {(this.props.view != 'roomlist' && this.props.view != 'userlist') && (
-                <div style={{marginRight: '50%', verticalAlign: 'middle', whiteSpace: 'nowrap', lineHeight: '25px'}}>
-                    <span style={{fontSize: '25px', padding: '0px 1em', display:'table-cell', verticalAlign:'middle'}}>Бронирование&nbsp;переговорной&nbsp;</span>
+                <div style={{marginRight: '50%', whiteSpace: 'nowrap', lineHeight: '25px'}}>
+                    <span style={{fontSize: '25px', paddingRight: '1em', display:'table-cell'}}>Бронирование&nbsp;переговорной&nbsp;</span>
                     <span style={{display:'table-cell', verticalAlign:'middle'}}><DrawRoomsMenu menu={this.props.menu} /></span>
                     {(this.props.isAdmin) && (
                         <span style={{display:'table-cell', verticalAlign:'middle'}}>
@@ -197,24 +197,15 @@ var DrawWeek = React.createClass({
             if(intKey == 27){
                 this.setState({ 
                     showEditor: false,
+                    showTooltip: false,
                 });
             }
         }.bind(this));
-
-        //window.addEventListener('resize', this.handleResize);
     },
-    handleResize: function(e) {
-        // var width = parseInt(window.getComputedStyle(document.getElementById('content'), null).getPropertyValue('width')) / 10;
-        //this.setState({
-           // cellwidth: width,
-        //})
-    },
-    componentWillUnmount: function() {
-        // window.removeEventListener('resize', this.handleResize);
-    },    
     componentWillReceiveProps: function(nextProps){
         this.setState({ 
             showEditor: false,
+            showTooltip: false,
         });
     },
     getDefaultProps: function() {
@@ -228,6 +219,7 @@ var DrawWeek = React.createClass({
     getInitialState: function() {
         return {
             showEditor: false,
+            showTooltip: false,
             data: {},
             tstart: '',
             tend: '',
@@ -235,24 +227,85 @@ var DrawWeek = React.createClass({
             cellwidth: parseInt(window.getComputedStyle(document.getElementById('content'), null).getPropertyValue('width')) / 10,
         };
     },
-    handleClick: function(event){
-        var marker = null;
-        if(this.props.json.markers && Object.keys(this.props.json.markers).length > 0 && event.target.getAttribute('data-abbr')){
-            marker = this.props.json.markers[parseInt(event.target.getAttribute('data-abbr'))];
-        };
+    handleClick: function(e){
+        var e = e || event;
+        var target = e.target || e.srcElement;
+        var curTarget = e.currentTarget;
+        var timestamp = parseInt(target.getAttribute('data-abbr'));
+        e.preventDefault();
 
-        var ts = date('H:i', parseInt(event.target.getAttribute('data-abbr')));
-        var te = date('H:i', strtotime('+ 30 minutes', parseInt(event.target.getAttribute('data-abbr'))));
+        if(timestamp && (target != curTarget)){
+            var marker = null;
+            if(this.props.json.markers && Object.keys(this.props.json.markers).length > 0 && timestamp){
+                marker = this.props.json.markers[timestamp];
+            };
 
-        var default_data = { id : event.target.getAttribute('data-abbr'), week : (event.target.index - 1), tstart : ts, tend : te };
-        var data = marker ? marker : default_data;
+            var t_start = date('H:i', timestamp);
+            var t_end = date('H:i', strtotime('+ 30 minutes', timestamp));
 
-        this.setState({
-            data: data,
-            tstart: data.tstart,
-            tend: data.tend,
-            showEditor: true,
-        });
+            var data = marker ? marker : { id : timestamp, tstart : t_start, tend : t_end };
+
+            this.setState({
+                data: data,
+                tstart: data.tstart,
+                tend: data.tend,
+                showEditor: true,
+            });
+        }
+        e.preventDefault();
+        e.stopPropagation();
+    },
+    onTooltip: function(e){
+        var e = e || event;
+        var target = e.target || e.srcElement;
+        var timestamp = parseInt(target.getAttribute('data-abbr'));
+
+        if(timestamp){
+            var marker = null;
+            if(this.props.json.markers && Object.keys(this.props.json.markers).length > 0 && timestamp){
+                marker = this.props.json.markers[timestamp];
+            };
+
+            if(marker){
+                var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+                this.setState({
+                    data: marker,
+                    showEditor: false,
+                    showTooltip: true,
+                    pos: { x: e.clientX + scrollLeft, y: e.clientY + scrollTop },
+                });
+
+            }
+        }
+        e.stopPropagation();
+        e.preventDefault();
+    },
+    offTooltip: function(e){
+        var e = e || event;
+        var target = e.target || e.srcElement;
+        var timestamp = parseInt(target.getAttribute('data-abbr'));
+
+        if(timestamp){
+            var marker = null;
+            if(this.props.json.markers && Object.keys(this.props.json.markers).length > 0 && timestamp){
+                marker = this.props.json.markers[timestamp];
+            };
+
+            if(marker){
+                var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+                this.setState({
+                    data: marker,
+                    showTooltip: false,
+                    pos: { x: e.clientX + scrollLeft, y: e.clientY + scrollTop },
+                });
+            }
+        }
+        e.stopPropagation();
+        e.preventDefault();
     },
     render : function(){
         var week_day = date("N", mktime(0, 0, 0, this.props.month, this.props.day, this.props.year));
@@ -261,7 +314,7 @@ var DrawWeek = React.createClass({
 
         cols.push(<td className="num_offset">&nbsp;</td>)
         for (i=1; i<=7; i++){
-            var daynow = Math.floor(date('j', strtotime('- '+(i-week_day)+' days', strtotime(this.props.day+'-'+this.props.month+'-'+this.props.year))));
+            var daynow = Math.floor(date('j', strtotime((i-week_day)+' days', strtotime(this.props.day+'-'+this.props.month+'-'+this.props.year))));
             var thColor = ((i==date('N', time())) ? '#00ab22':'');
             cols.push(<th className='dates' style={{ 'color':thColor }}>{weekdays[i-1]} {daynow}</th>);
         }
@@ -276,8 +329,9 @@ var DrawWeek = React.createClass({
             cols.push(<td className={colClass}>{(timestamp)&&(<div>{timestamp}</div>)}</td>);
 
             for (i=1; i<=7; i++){
-                var monthnow = Math.floor(date('m', strtotime('- '+(i-week_day)+' days', strtotime(this.props.day+'-'+this.props.month+'-'+this.props.year+' '+tm))))
-                var daynow = Math.floor(date('j', strtotime('- '+(i-week_day)+' days', strtotime(this.props.day+'-'+this.props.month+'-'+this.props.year+' '+tm))))
+                var monthnow = Math.floor(date('m', strtotime(((i>week_day) ? '+':'-') + Math.abs(week_day-i) + ' days', strtotime(this.props.day+'-'+this.props.month+'-'+this.props.year+' '+tm))))
+                var daynow = Math.floor(date('j', strtotime(((i>week_day) ? '+':'-') + Math.abs(week_day-i) + ' days', strtotime(this.props.day+'-'+this.props.month+'-'+this.props.year+' '+tm))))
+                
                 var field_id = strtotime(this.props.year+'-'+monthnow+'-'+daynow+' '+tm);
                 var tclass = ((j==date('H', time())) ? 'green_line':'') + ((i==date('N', time())) ? ' back_green':'') + ((j%1==0)? ' du':' dd');
                 var marker = null;
@@ -286,9 +340,9 @@ var DrawWeek = React.createClass({
                 };
 
                 cols.push(
-                    <td data-abbr={field_id} className={tclass} onClick={this.handleClick} style={{padding:0, margin:0}}>
+                    <td data-abbr={field_id} className={tclass} style={{padding:0, margin:0}}>
                         {(marker && marker.id) && (
-                            <span className="marker" data-tooltip={decodeURIComponent(marker.data)} data-abbr={marker.id} style={{height:marker.height-1, backgroundColor:this.props.json.color }} onClick={this.handleClick}>{marker.user}</span>
+                            <span className="marker" data-abbr={marker.id} style={{height:marker.height-1, backgroundColor:this.props.json.color }} onMouseEnter={this.onTooltip} onMouseLeave={this.offTooltip}>{marker.user}</span>
                         )}
                     </td>
                 );
@@ -307,41 +361,44 @@ var DrawWeek = React.createClass({
         var curMonth = parseInt(this.props.json.month);
 
         return (
-            <table style={{margin:'0 auto'}}>
-                <tbody>
-                    <tr>
-                        <td colSpan="2">
-                            <h2 style={{textAlign:'center'}}>{months[this.props.json.month-1]}, {this.props.json.year}<br /><br /></h2>                            
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style={{verticalAlign:'top', paddingRight: '40px', whiteSpace: 'nowrap'}}>
-                            <span className="button_sand" onClick={function(){ csend({ view:'week', date: strtotime('-1 month', strtotime(curYear + '-' + curMonth + '-' + 1)) }) }}>&laquo;</span>
-                            <select className="button_sand" onChange={function(e){ csend({ view:'week', date: strtotime(curYear + '-' + e.target.value + '-' + 1) }) }}>
-                            {months.map(function(val, index){
-                                return (<option key={index} value={index+1} selected={months[curMonth-1] === val}>{val}</option>);
-                            })}
-                            </select>
-                            <select className="button_sand" onChange={function(e){ csend({ view:'week', date: strtotime(e.target.value + '-' + curMonth + '-' + 1) }) }}>
-                            {years.map(function(val, index){
-                                return (<option key={index} value={val} selected={curYear === val}>{val}</option>);
-                            })}
-                            </select>
-                            <span className="button_sand" onClick={function(){ csend({ view:'week', date: strtotime('+1 month', strtotime(curYear + '-' + curMonth + '-' + 1)) }) }}>&raquo;</span>
-                            <DrawMonth month={this.props.json.month} year={this.props.json.year} showyear={true} />
-                            <br />
-                            <hr />
-                            <span className="button_sand" onClick={function(){ csend({ view:'week', date: strtotime('now') }) }}>Сегодня</span>
-                        </td>
-                        <td>
-                            <table className="border1px parent_container" style={{margin: '0 auto'}}>
-                            <tbody>{rows}</tbody>
-                            </table>
-                            <TimeEdit json={this.props.json} data={this.state.data} closed={!this.state.showEditor} />
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div>
+                <table style={{margin:'0 auto'}} onClick={this.handleClick}>
+                    <tbody>
+                        <tr>
+                            <td colSpan="2">
+                                <h2 style={{textAlign:'center'}}>{months[this.props.json.month-1]}, {this.props.json.year}<br /><br /></h2>                            
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style={{verticalAlign:'top', paddingRight: '40px', whiteSpace: 'nowrap'}}>
+                                <span className="button_sand" onClick={function(){ csend({ view:'week', date: strtotime('-1 month', strtotime(curYear + '-' + curMonth + '-' + 1)) }) }}>&laquo;</span>
+                                <select className="button_sand" onChange={function(e){ csend({ view:'week', date: strtotime(curYear + '-' + e.target.value + '-' + 1) }) }}>
+                                {months.map(function(val, index){
+                                    return (<option key={index} value={index+1} selected={months[curMonth-1] === val}>{val}</option>);
+                                })}
+                                </select>
+                                <select className="button_sand" onChange={function(e){ csend({ view:'week', date: strtotime(e.target.value + '-' + curMonth + '-' + 1) }) }}>
+                                {years.map(function(val, index){
+                                    return (<option key={index} value={val} selected={curYear === val}>{val}</option>);
+                                })}
+                                </select>
+                                <span className="button_sand" onClick={function(){ csend({ view:'week', date: strtotime('+1 month', strtotime(curYear + '-' + curMonth + '-' + 1)) }) }}>&raquo;</span>
+                                <DrawMonth month={this.props.json.month} year={this.props.json.year} showyear={true} />
+                                <br />
+                                <hr />
+                                <span className="button_sand" onClick={function(){ csend({ view:'week', date: strtotime('now') }) }}>Сегодня</span>
+                            </td>
+                            <td>
+                                <table className="border1px parent_container" style={{margin: '0 auto'}}>
+                                <tbody>{rows}</tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <TimeEdit json={this.props.json} data={this.state.data} closed={!this.state.showEditor} />
+                <ToolTip text={this.state.data.data} closed={!this.state.showTooltip} pos={this.state.pos} />
+            </div>
         );
     }
 
@@ -401,6 +458,89 @@ var DrawRoomsMenu = React.createClass({
     }
 });
 
+var DraggableElement = React.createClass({
+    getInitialState: function() {
+        return { 
+            dragging: false,
+            pos: {x: 0, y: 0},
+            pickpos: {x: 0, y: 0},
+        };
+    },
+    componentDidMount: function() {
+        this.setState({
+            pos: { x: document.documentElement.clientWidth / 3, y: document.documentElement.clientHeight / 4 }
+        });
+
+        document.getElementById(this.props.activepoint).addEventListener('mousedown', function(e){
+            var e = e || event;
+            var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+            this.setState({
+                dragging: true,
+                pickpos: { 
+                    x: e.clientX + scrollLeft - (this.getDOMNode().getBoundingClientRect()).left, 
+                    y: e.clientY + scrollTop - (this.getDOMNode().getBoundingClientRect()).top 
+                },
+            });
+        }.bind(this))
+
+        document.addEventListener('mouseup', function(e){
+            this.setState({
+                dragging: false,
+            });
+        }.bind(this))
+
+        document.addEventListener('mousemove', function(e){
+            var e = e || event;
+            if (this.state.dragging){
+                var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+                var maxWidth = document.documentElement.clientWidth - this.getDOMNode().clientWidth;
+                var maxHeight = document.documentElement.clientHeight - this.getDOMNode().clientHeight;
+
+                var x = Math.min(Math.max(e.clientX + scrollLeft - this.state.pickpos.x, 0), maxWidth);
+                var y = Math.min(Math.max(e.clientY + scrollTop - this.state.pickpos.y, 0), maxHeight);
+
+                this.setState({
+                    pos: { x: x, y: y},
+                });
+            }
+        }.bind(this))
+    },
+    render: function() {
+        return (
+            <div style={{position:'absolute', top: this.state.pos.y, left: this.state.pos.x }}>
+                {this.props.children}
+            </div>
+        );
+    }
+});
+
+var ToolTip = React.createClass({
+    componentWillReceiveProps: function(nextProps){
+        this.setState({ 
+            closed: nextProps.closed,
+            pos: nextProps.pos || {x: 0, y: 0},
+            text: nextProps.text,
+        });
+    },
+    getInitialState: function() {
+        return { 
+            closed: true,
+            pos: {x: 0, y: 0},
+            text: '',
+        };
+    },
+    render: function() {
+        return (
+            <div className="tooltip" style={{position:'absolute', top: this.state.pos.y - 45, left: this.state.pos.x + 10, opacity:(this.state.closed ?'0':'1') }}>
+                {this.state.text}
+            </div>
+        );
+    }
+});
+
 var TimeEdit = React.createClass({
     componentWillReceiveProps: function(nextProps){
         this.setState({ 
@@ -446,8 +586,14 @@ var TimeEdit = React.createClass({
             text: event.target.value,
         });
     },
-    deleteConflict: function(){
-        csend({ view : 'week', storage:1, id: this.state.conflict.id, tstart: this.state.conflict.start, tend: this.state.conflict.end });
+    handleDelete: function(event){
+        var ts = parseFloat(this.state.start_time_value);
+        var te = parseFloat(this.state.end_time_value);
+
+        var tstxt = (ts%1 > 0) ? ts.toString().replace('.5', ':30') : ts.toString() + ':00';
+        var tetxt = (te%1 > 0) ? te.toString().replace('.5', ':30') : te.toString() + ':00';
+        csend({ view : 'week', storage : 1, id : this.state.data.id, data : '', tstart : tstxt, tend : tetxt, addmonths : 0 });
+        this.setState({ closed: true });
     },
     handleStartTimeChange: function(event){
         this.setState({ 
@@ -481,84 +627,60 @@ var TimeEdit = React.createClass({
         var tetxt = (te%1 > 0) ? te.toString().replace('.5', ':30') : te.toString() + ':00';
 
         return (
-            <div>
-                {(this.state.conflict) && (
-                <div style={{position:'absolute', top:0, left:0, bottom:0, right:0, backgroundColor : 'rgba(0,0,0,.5)', alignItems:'center', display:'flex', minHeight:'100%' }}>
-                    <div id="msgboxform" style={{ backgroundColor: '#eee', boxShadow:'0 0 6px rgba(0,0,0,.5)', margin: 'auto auto' }}>
+            <div className="transition_all" style={{position:'absolute', top:0, left:0, bottom:0, right:0, backgroundColor : 'rgba(0,0,0,.5)', alignItems:'center', visibility: (this.state.closed ? 'hidden':'visible'), opacity: (this.state.closed ? '0':'1'), minHeight:'100%' }}>
+                <DraggableElement activepoint="msgboxform_header">
+                    <div id="msgboxform" style={{ backgroundColor: '#eee', boxShadow:'0 0 16px rgba(0,0,0,.5)', margin: '0px auto', width: '800px' }}>
                         <div id="msgboxform_header" className="header" style={{'padding':'0'}}>
-                            <div style={{float: 'left', fontWeight: 'bold', padding: '5px 10px'}}>Конфликт</div>
+                            <div style={{float: 'left', fontWeight: 'bold', padding: '5px 10px'}}>Добавление события</div>
                             <div onClick={this.handleClose} className="button_sand" style={{ float: 'right' }}>&times;</div>
                             <div style={{ clear: 'both'}}></div>
                         </div>
-                        <div style={{padding: '0px 20px'}}>
-                            <h2>На это время уже есть запись</h2>
-                            <p>Пользователь <b>{this.state.conflict.user}</b></p>
-                            <p>Создано <b>{this.state.conflict.date}</b> на <b>{this.state.conflict.start}-{this.state.conflict.end}</b></p>
-                            {(this.props.json.ia) && (
-                                <p>
-                                    <a className="button_sand" onClick={this.deleteConflict}>удалить конфликтующую запись</a>
-                                </p>
-                            )}
+                        <div style={{padding: '10px'}}>
+                            <table style={{width: '100%'}} className="txtcontent">
+                                <tbody>
+                                    <tr>
+                                        <td colSpan="2">
+                                            <label htmlFor="msgboxval">Заметка</label>
+                                            <textarea id="msgboxval" style={{width: '100%', height: '100px', resize: 'none', padding: '0', margin: '0', font: '1em arial'}} onChange={this.handleText} value={this.state.text}></textarea>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style={{width: '300px'}}>
+                                            <table>
+                                                <tbody>
+                                                    <tr>
+                                                        <td><label htmlFor="start_range_time">Начало&nbsp;</label></td>
+                                                        <td><input style={{ border: 'none', outline: 'none' }} type="range" id="start_range_time" min="7" max={22} step =".5" value={this.state.start_time_value} onChange={this.handleStartTimeChange} />&nbsp;{tstxt}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><label htmlFor="end_range_time">Конец&nbsp;</label></td>
+                                                        <td><input style={{ border: 'none', outline: 'none' }} type="range" id="end_range_time" min="7" max={22.5} step =".5" value={this.state.end_time_value} onChange={this.handleEndTimeChange} />&nbsp;{tetxt}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <input type="hidden" id="uservalue" />
+                                            <input type="hidden" id="idvalue" />
+                                            <input type="checkbox" id="checkmonths" onChange={this.handleChecked} checked={this.state.month_checked} />
+                                            <label htmlFor="checkmonths">&nbsp;повторяющиеся события</label>
+                                            {(this.state.month_checked == 'checked') && (
+                                                <label htmlFor="months">&nbsp;&nbsp;<input name="months" id="months" min="0" max="12" value={this.state.months_value}  onChange={this.handleMonthsChange} type="range" />&nbsp;{this.state.months_value}&nbsp;месяцев</label>
+                                            )}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colSpan="2" style={{textAlign: 'center'}}><span id="skull"></span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div style={{float:'right'}}>
+                                <button className="button_sand" onClick={this.handleDelete}>Удалить</button> <button className="button_sand" onClick={this.handleClose}>Отмена</button> <button className="button_sand" onClick={this.handleSave} autoFocus >Сохранить</button>
+                            </div>
+                            <div style={{clear:'both'}}></div>
                         </div>
                     </div>
-                </div>
-                )}
-
-                {(!this.state.closed && !this.state.conflict) && (
-                    <div style={{position:'absolute', top:0, left:0, bottom:0, right:0, backgroundColor : 'rgba(0,0,0,.5)', alignItems:'center', display:'flex', minHeight:'100%' }}>
-                        <div id="msgboxform" style={{ backgroundColor: '#eee', boxShadow:'0 0 6px rgba(0,0,0,.5)', margin: '0px auto', width: '800px' }}>
-                            <div id="msgboxform_header" className="header" style={{'padding':'0'}}>
-                                <div style={{float: 'left', fontWeight: 'bold', padding: '5px 10px'}}>Добавление события</div>
-                                <div onClick={this.handleClose} className="button_sand" style={{ float: 'right' }}>&times;</div>
-                                <div style={{ clear: 'both'}}></div>
-                            </div>
-                            <div style={{padding: '10px'}}>
-                                <table style={{width: '100%'}} className="txtcontent">
-                                    <tbody>
-                                        <tr>
-                                            <td colSpan="2">
-                                                <label htmlFor="msgboxval">Заметка</label>
-                                                <textarea id="msgboxval" style={{width: '100%', height: '100px', resize: 'none', padding: '0', margin: '0', font: '1em arial'}} onChange={this.handleText} value={this.state.text}></textarea>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style={{width: '300px'}}>
-                                                <table>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td><label htmlFor="start_range_time">Начало&nbsp;</label></td>
-                                                            <td><input style={{ border: 'none', outline: 'none' }} type="range" id="start_range_time" min="7" max={22} step =".5" value={this.state.start_time_value} onChange={this.handleStartTimeChange} />&nbsp;{tstxt}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td><label htmlFor="end_range_time">Конец&nbsp;</label></td>
-                                                            <td><input style={{ border: 'none', outline: 'none' }} type="range" id="end_range_time" min="7" max={22.5} step =".5" value={this.state.end_time_value} onChange={this.handleEndTimeChange} />&nbsp;{tetxt}</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                            <td>
-                                                <input type="hidden" id="uservalue" />
-                                                <input type="hidden" id="idvalue" />
-                                                <input type="checkbox" id="checkmonths" onChange={this.handleChecked} checked={this.state.month_checked} />
-                                                <label htmlFor="checkmonths">&nbsp;повторяющиеся события</label>
-                                                {(this.state.month_checked == 'checked') && (
-                                                    <label htmlFor="months">&nbsp;&nbsp;<input name="months" id="months" min="0" max="12" value={this.state.months_value}  onChange={this.handleMonthsChange} type="range" />&nbsp;{this.state.months_value}&nbsp;месяцев</label>
-                                                )}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td colSpan="2" style={{textAlign: 'center'}}><span id="skull"></span></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                <div style={{float:'right'}}>
-                                    <button className="button_sand" onClick={this.handleClose} >Отмена</button> <button className="button_sand" onClick={this.handleSave} >Сохранить</button>
-                                </div>
-                                <div style={{clear:'both'}}></div>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                </DraggableElement>
             </div>
         );
     }
@@ -781,7 +903,7 @@ var MainApp = React.createClass({
     },
     componentWillMount: function() {
         global.watch('json', function(sender, oldval, newval){
-            //console.log(newval)
+            //console.log(JSON.stringify(newval))
             this.setState({
                 newval: newval
             })      
